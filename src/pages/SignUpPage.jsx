@@ -66,16 +66,15 @@ const SignUp = () => {
 
   return (
     <div className="auth-container" style={{ backgroundImage: `url(${bg})` }}>
-      {/* Header */}
-      <header className="glow-header">
-        <h1>
-          <span style={{ color: "#000" }}>Glow</span>
-          <span style={{ color: "#FF6B6B" }}>Nest</span>
-        </h1>
-      </header>
-
       {/* Form Container */}
       <div className="auth-inner-container">
+        {/* Header */}
+        <header className="glow-header">
+          <h1>
+            <span style={{ color: "#000" }}>Glow</span>
+            <span style={{ color: "#FF6B6B" }}>Nest</span>
+          </h1>
+        </header>
         <h2 className="auth-title">Sign Up</h2>
 
         <form onSubmit={handleSignUp} className="auth-form">

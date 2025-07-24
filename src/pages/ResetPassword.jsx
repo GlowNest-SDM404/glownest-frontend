@@ -33,13 +33,16 @@ const ResetPassword = () => {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_DATABASE_URL}/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, newPassword }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_DATABASE_URL}/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token, newPassword }),
+        }
+      );
 
       const data = await res.json();
 
@@ -57,9 +60,11 @@ const ResetPassword = () => {
   return (
     <div className="auth-container" style={{ backgroundImage: `url(${bg})` }}>
       <div className="auth-inner-container">
-
         {/* Logo */}
-        <div className="auth-logo-container" style={{ textAlign: "center", marginBottom: "1rem" }}>
+        <div
+          className="auth-logo-container"
+          style={{ textAlign: "center", marginBottom: "1rem" }}
+        >
           <h1 className="glow-nest-logo">
             <span style={{ color: "#000" }}>Glow</span>
             <span style={{ color: "#FF6B6B" }}>Nest</span>
@@ -90,8 +95,6 @@ const ResetPassword = () => {
           <button type="submit" className="auth-submit-button">
             Reset Password
           </button>
-
-         
         </form>
       </div>
     </div>

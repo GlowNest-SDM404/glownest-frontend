@@ -13,17 +13,17 @@ const ForgotPassword = () => {
   const handleReset = (e) => {
     e.preventDefault();
     console.log("Password reset link sent to:", email);
-    navigate("/resetPass"); 
-    
-    
+    navigate("/resetPass");
   };
 
   return (
     <div className="auth-container" style={{ backgroundImage: `url(${bg})` }}>
       <div className="auth-inner-container">
-
         {/* Logo */}
-        <div className="auth-logo-container" style={{ textAlign: "center", marginBottom: "1rem" }}>
+        <div
+          className="auth-logo-container"
+          style={{ textAlign: "center", marginBottom: "1rem" }}
+        >
           <h1 className="glow-nest-logo">
             <span style={{ color: "#000" }}>Glow</span>
             <span style={{ color: "#FF6B6B" }}>Nest</span>

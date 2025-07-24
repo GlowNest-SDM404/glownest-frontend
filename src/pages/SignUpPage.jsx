@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import bg from "../assets/img/back.webp";
 
+import { useUser } from "../contexts/UserContext";
+
 // Styles
 import "../styles/AuthPage.css";
 
@@ -19,6 +21,9 @@ const SignUp = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const navigate = useNavigate();
+
+  // Refresh user context from token
+  const { refreshUserFromToken } = useUser();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -45,7 +50,9 @@ const SignUp = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("jwt", data.jwt);
+
+        refreshUserFromToken();
 
         setFirstName("");
         setLastName("");
@@ -53,7 +60,8 @@ const SignUp = () => {
         setPhoneNumber("");
         setPassword("");
         setSuccess("Registration successful!");
-        navigate("/signin");
+
+        navigate("/");
       } else {
         setError(data.message || "Registration failed. Please try again.");
       }
@@ -149,7 +157,7 @@ const SignUp = () => {
 
           <p className="auth-already-account-text">
             Already have an account?{" "}
-            <Link to="/signin" className="auth-link">
+            <Link to="/login" className="auth-link">
               Sign In
             </Link>
           </p>

@@ -6,54 +6,35 @@ import bg from "../assets/img/back.webp";
 import "../styles/AuthPage.css";
 
 const ResetPassword = () => {
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const token = queryParams.get("token"); // token from URL
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  useEffect(() => {
+  }, [token]);
 
-  const handleReset = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (!newPassword || !confirmPassword) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    if (!token) {
-      alert("Token is missing from the URL.");
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_DATABASE_URL}/reset-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token, newPassword }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Reset failed");
+    const response = await fetch(
+      `${import.meta.env.VITE_DATABASE_URL}/reset-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, password }),
       }
+    );
 
-      alert("Password reset successful. You can now log in.");
-      navigate("/signin");
-    } catch (err) {
-      alert(err.message);
+    if (response.ok) {
+      setMessage("Your password has been reset successfully.");
+
+      localStorage.removeItem("jwt");
+      navigate("/");
+    } else {
+      setMessage("Error resetting password.");
     }
   };
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import bg from "../assets/img/back.webp";
 
 // Styles
@@ -8,12 +7,42 @@ import "../styles/AuthPage.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const navigate = useNavigate();
 
-  const handleReset = (e) => {
+  // State for status and loading
+  const [status, setStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleReset = async (e) => {
     e.preventDefault();
-    console.log("Password reset link sent to:", email);
-    navigate("/resetPass");
+
+    setIsLoading(true);
+    setStatus("");
+
+    try {
+      // Send a request to the backend to send the reset email
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/request-password-reset`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("A reset link has been sent to your email.");
+      } else {
+        setStatus(data.message);
+      }
+    } catch (err) {
+      setStatus("Error connecting to the server");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,13 +72,23 @@ const ForgotPassword = () => {
             // required
           />
 
-          <button type="submit" className="auth-submit-button">
-            Send Reset Link
+          <button
+            type="submit"
+            className="auth-submit-button"
+            disabled={isLoading}
+          >
+            {isLoading ? "Sending Link..." : "Send Reset Link"}
           </button>
+
+          {status && (
+            <div className="auth-status-container">
+              <p className="status">{status}</p>
+            </div>
+          )}
 
           <p className="auth-already-account-text">
             Remember your password?{" "}
-            <Link to="/signin" className="auth-link">
+            <Link to="/login" className="auth-link">
               Back to Login
             </Link>
           </p>

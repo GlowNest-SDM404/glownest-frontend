@@ -103,12 +103,12 @@ const SignIn = () => {
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <p className="forgot">
+          <div className="auth-forgot-container">
             <Link to="/forgot-password" className="auth-link">
-              Forgot your password?{" "}
+              Forgot your password?
             </Link>
-          </p>
-          <SocialContainer />
+            <SocialContainer />
+          </div>
 
           <p className="auth-already-account-text">
             Don’t have an account?{" "}
@@ -116,7 +116,11 @@ const SignIn = () => {
               Register now
             </Link>
           </p>
-          {status && <p className="status">{status}</p>}
+          {status && (
+            <div className="auth-status-container">
+              <p className="auth-status">{status}</p>
+            </div>
+          )}
         </form>
       </div>
     </div>

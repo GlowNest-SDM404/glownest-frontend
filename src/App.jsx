@@ -1,6 +1,3 @@
-// src/App.jsx
-import React from "react";
-import { Link } from "react-router-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import SignInPage from "./pages/SignInPage.jsx";
@@ -30,7 +27,7 @@ const App = () => {
         <Route path="/login" element={<SignInPage />} />
         <Route path="/register" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPass />} />
+        <Route path="/reset-password/:token" element={<ResetPass />} />
       </Routes>
     </BrowserRouter>
   );

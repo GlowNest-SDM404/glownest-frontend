@@ -103,6 +103,12 @@ const SignIn = () => {
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
+          {status && (
+            <div className="auth-status-container">
+              <p className="auth-status">{status}</p>
+            </div>
+          )}
+
           <div className="auth-forgot-container">
             <Link to="/forgot-password" className="auth-link">
               Forgot your password?
@@ -116,11 +122,6 @@ const SignIn = () => {
               Register now
             </Link>
           </p>
-          {status && (
-            <div className="auth-status-container">
-              <p className="auth-status">{status}</p>
-            </div>
-          )}
         </form>
       </div>
     </div>

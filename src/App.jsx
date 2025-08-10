@@ -9,6 +9,7 @@ import ProtectedLayout from "./components/ProtectLayout.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 
 import Home from "./pages/Home.jsx";
+import ProductListPage from "./pages/ProductListPage.jsx";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
         >
           <Route index element={<Home />} />
           <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/products" element={<ProductListPage />} />
         </Route>
 
         <Route path="/login" element={<SignInPage />} />

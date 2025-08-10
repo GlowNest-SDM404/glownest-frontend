@@ -103,10 +103,10 @@
   display: block;
 }
 .close-drawer {
-  display: none; 
+  display: none;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 570px) {
   .close-drawer {
     display: block;
     margin-left: auto;
@@ -118,7 +118,7 @@
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 570px) {
   .products-layout {
     display: block;
   }

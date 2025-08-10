@@ -59,7 +59,6 @@ const Navbar = () => {
               Search
             </button>
 
-            {/* Conditional rendering based on user authentication */}
             {user ? (
               <button
                 className="btn btn-outline-danger"

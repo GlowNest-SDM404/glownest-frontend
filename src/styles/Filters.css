@@ -6,12 +6,12 @@
 }
 
 .filters {
-  position: sticky;
-  top: 96px; /* optional */
   background: #fff;
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 1rem;
+  position: static;
+  height: fit-content;
 }
 
 .products-main {
@@ -81,4 +81,77 @@
 .pill.active {
   border-color: #ff8b8b;
   background: #ffe8e8;
+}
+
+.mobile-filter-toggle {
+  display: none;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1000;
+  padding: 0.6rem 1.2rem;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.filters-drawer {
+  display: block;
+}
+.close-drawer {
+  display: none; 
+}
+
+@media (max-width: 400px) {
+  .close-drawer {
+    display: block;
+    margin-left: auto;
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+}
+
+@media (max-width: 400px) {
+  .products-layout {
+    display: block;
+  }
+
+  .filters {
+    display: none;
+  }
+
+  .filters-drawer.open .filters {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    overflow-y: auto;
+    background: white;
+    padding: 2rem;
+    max-height: 100vh;
+  }
+
+  .close-drawer {
+    margin-left: auto;
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .mobile-filter-toggle {
+    display: block;
+  }
+
+  .filters-drawer.open + .mobile-filter-toggle {
+    display: none !important;
+  }
 }

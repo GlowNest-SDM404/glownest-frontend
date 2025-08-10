@@ -55,13 +55,16 @@ const Navbar = () => {
               placeholder="Search"
               aria-label="Search"
             />
-            <button className="btn btn-outline-success" type="submit">
+            <button
+              className="btn btn-outline-success search-btn"
+              type="submit"
+            >
               Search
             </button>
 
             {user ? (
               <button
-                className="btn btn-outline-danger"
+                className="btn btn-outline-danger logout-btn"
                 type="button"
                 onClick={logout}
               >

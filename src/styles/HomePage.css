@@ -12,13 +12,14 @@
   border-radius: 10px;
 }
 
-.home-section-title {
+.section-title {
   text-align: center;
   font-size: 24px;
   margin: 40px 0 20px;
 }
 
 .navbar {
+  margin: 20px 10px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -42,10 +43,13 @@
   cursor: pointer;
 }
 
-.search-btn {
-  background-color: #fdd5d5;
-  color: #333;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+.btn {
+  margin-left: 10px;
+  font-size: 1rem;
 }
+
+.btn:hover {
+  color: white;
+  background-color: #cf4446;
+}
+

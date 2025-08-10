@@ -6,6 +6,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPass from "./pages/ResetPassword.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ProtectedLayout from "./components/ProtectLayout.jsx";
+import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 
 import Home from "./pages/Home.jsx";
 
@@ -22,6 +23,7 @@ const App = () => {
           }
         >
           <Route index element={<Home />} />
+          <Route path="/search" element={<SearchResultsPage />} />
         </Route>
 
         <Route path="/login" element={<SignInPage />} />

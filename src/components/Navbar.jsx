@@ -1,4 +1,5 @@
 import { useUser } from "../contexts/UserContext";
+import SearchBar from "./SearchBar";
 
 const Navbar = () => {
   const { user, logout } = useUser();
@@ -9,7 +10,7 @@ const Navbar = () => {
       style={{ backgroundColor: "#ff6b6b" }}
     >
       <div className="container-fluid">
-        <a className="navbar-brand" href="#">
+        <a className="navbar-brand" href="/">
           GlowNest
         </a>
         <button
@@ -27,7 +28,7 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="#">
+              <a className="nav-link active" aria-current="page" href="/">
                 Home
               </a>
             </li>
@@ -48,38 +49,18 @@ const Navbar = () => {
               </a>
             </li>
           </ul>
-          <form className="d-flex" role="search">
-            <input
-              className="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button
-              className="btn btn-outline-success search-btn"
-              type="submit"
-            >
-              Search
-            </button>
 
-            {user ? (
-              <button
-                className="btn btn-outline-danger logout-btn"
-                type="button"
-                onClick={logout}
-              >
-                Logout
-              </button>
-            ) : (
-              <a
-                href="/login"
-                className="btn btn-outline-primary"
-                type="button"
-              >
-                Login
-              </a>
-            )}
-          </form>
+          <SearchBar initial="" />
+
+          {user ? (
+            <button className="logout-btn btn" type="button" onClick={logout}>
+              Logout
+            </button>
+          ) : (
+            <a href="/login" className="btn btn-outline-primary" type="button">
+              Login
+            </a>
+          )}
         </div>
       </div>
     </nav>

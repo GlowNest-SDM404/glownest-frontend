@@ -43,13 +43,12 @@
   cursor: pointer;
 }
 
-.btn {
+.custom-btn {
   margin-left: 10px;
   font-size: 1rem;
 }
 
-.btn:hover {
+.custom-btn:hover {
   color: white;
   background-color: #cf4446;
 }
-

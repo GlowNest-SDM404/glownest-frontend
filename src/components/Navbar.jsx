@@ -76,19 +76,14 @@ const Navbar = () => {
 
           <div className="d-flex align-items-center gap-2">
             <SearchBar initial="" />
-            {user ? (
-              <button
-                className="btn btn-outline-light"
-                type="button"
-                onClick={logout}
-              >
-                Logout
-              </button>
-            ) : (
-              <NavLink to="/login" className="btn btn-outline-light">
-                Login
-              </NavLink>
-            )}
+
+            <button
+              className="logout-btn custom-btn"
+              type="button"
+              onClick={logout}
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

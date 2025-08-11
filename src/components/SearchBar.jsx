@@ -16,7 +16,12 @@ export default function SearchBar({ initial = "" }) {
 
   return (
     <div className="search-bar-container">
-      <form onSubmit={onSubmit} role="search" aria-label="Product search" className="search-bar">
+      <form
+        onSubmit={onSubmit}
+        role="search"
+        aria-label="Product search"
+        className="search-bar"
+      >
         <input
           type="search"
           value={value}
@@ -24,7 +29,9 @@ export default function SearchBar({ initial = "" }) {
           placeholder="Search"
           aria-label="Search products"
         />
-        <button className="search-btn btn" type="submit">Search</button>
+        <button className="search-btn custom-btn" type="submit">
+          Search
+        </button>
       </form>
     </div>
   );

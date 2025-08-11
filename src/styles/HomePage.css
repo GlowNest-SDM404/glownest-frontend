@@ -34,21 +34,4 @@
   padding: 10px 15px;
 }
 
-.logout-btn {
-  background-color: #ff9c9c;
-  color: white;
-  border: none;
-  margin: 0 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
 
-.custom-btn {
-  margin-left: 10px;
-  font-size: 1rem;
-}
-
-.custom-btn:hover {
-  color: white;
-  background-color: #cf4446;
-}

@@ -136,6 +136,7 @@
     background: white;
     padding: 2rem;
     max-height: 100vh;
+    height: 100%;
   }
 
   .close-drawer {

@@ -1,3 +1,7 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
+import { NavLink } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import SearchBar from "./SearchBar";
 
@@ -6,13 +10,14 @@ const Navbar = () => {
 
   return (
     <nav
-      className="navbar navbar-expand-lg"
+      className="navbar navbar-expand-lg navbar-dark"
       style={{ backgroundColor: "#ff6b6b" }}
     >
       <div className="container-fluid">
-        <a className="navbar-brand" href="/">
+        <NavLink className="navbar-brand" to="/">
           GlowNest
-        </a>
+        </NavLink>
+
         <button
           className="navbar-toggler"
           type="button"
@@ -28,39 +33,63 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="/">
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `nav-link${isActive ? " active" : ""}`
+                }
+              >
                 Home
-              </a>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/products">
+              <NavLink
+                to="/products"
+                className={({ isActive }) =>
+                  `nav-link${isActive ? " active" : ""}`
+                }
+              >
                 Products
-              </a>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  `nav-link${isActive ? " active" : ""}`
+                }
+              >
                 Profile
-              </a>
+              </NavLink>
             </li>
-
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <NavLink
+                to="/wishlist"
+                className={({ isActive }) =>
+                  `nav-link${isActive ? " active" : ""}`
+                }
+              >
                 WishList
-              </a>
+              </NavLink>
             </li>
           </ul>
 
-          <SearchBar initial="" />
-
-          {user ? (
-            <button className="logout-btn btn" type="button" onClick={logout}>
-              Logout
-            </button>
-          ) : (
-            <a href="/login" className="btn btn-outline-primary" type="button">
-              Login
-            </a>
-          )}
+          <div className="d-flex align-items-center gap-2">
+            <SearchBar initial="" />
+            {user ? (
+              <button
+                className="btn btn-outline-light"
+                type="button"
+                onClick={logout}
+              >
+                Logout
+              </button>
+            ) : (
+              <NavLink to="/login" className="btn btn-outline-light">
+                Login
+              </NavLink>
+            )}
+          </div>
         </div>
       </div>
     </nav>

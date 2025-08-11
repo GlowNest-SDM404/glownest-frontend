@@ -4,6 +4,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { NavLink } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import SearchBar from "./SearchBar";
+import "../styles/Navbar.css";
 
 const Navbar = () => {
   const { user, logout } = useUser();
@@ -75,15 +76,12 @@ const Navbar = () => {
           </ul>
 
           <div className="d-flex align-items-center gap-2">
+            <div className="cart-wrapper">
+              <a href="/checkout" className="custom-link">
+                <i className="bi bi-cart3 cart-icon"></i>
+              </a>
+            </div>
             <SearchBar initial="" />
-
-            <button
-              className="logout-btn custom-btn"
-              type="button"
-              onClick={logout}
-            >
-              Logout
-            </button>
           </div>
         </div>
       </div>

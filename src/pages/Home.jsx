@@ -4,7 +4,7 @@ import BannerCarousel from "../components/BannerCarousel.jsx";
 
 const Home = () => {
   return (
-    <div className="home-home-container">
+    <div className="home-container">
       <section className="home-slider-container">
         <BannerCarousel intervalMs={5000} showDots showButtons />
       </section>

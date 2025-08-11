@@ -3,6 +3,8 @@ import FilterSidebar from "../components/FilterSidebar";
 import "../styles/Filters.css";
 import "../styles/ProductItem.css";
 
+import ProductItem from "../components/ProductItem";
+
 export default function ProductListPage() {
   const [filters, setFilters] = useState({
     q: "",
@@ -80,20 +82,7 @@ export default function ProductListPage() {
             <div>Failed to load products: {error}</div>
           )}
 
-          <div className="products-grid">
-            {products.map((product) => (
-              <article key={product._id} className="product-item">
-                <img
-                  className="product-item-image"
-                  src={product.imageUrl}
-                  alt={product.productName}
-                />
-                <h3 className="product-item-name">{product.productName}</h3>
-                <p className="product-item-brand">{product.brand}</p>
-                <p className="product-item-price">${product.price}</p>
-              </article>
-            ))}
-          </div>
+          <ProductItem products={products} loading={loading} error={error} />
 
           {!loading && !error && products.length === 0 && (
             <p style={{ marginTop: "1rem" }}>

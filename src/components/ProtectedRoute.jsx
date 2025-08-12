@@ -3,6 +3,9 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import isTokenExpired from "../utils/authUtils";
 
+import ErrorMessage from "./ErrorMessage";
+import AnimatedLoader from "./Loaders/AnimatedLoader";
+
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -12,7 +15,7 @@ export default function ProtectedRoute({ children }) {
   const { user, userLoaded } = useUser();
 
   // Function to fetch protected data
-  const fetchProtectedData = async () => {
+  const fetchProtectedData = async (redirectOnSuccess = false) => {
     const token = localStorage.getItem("jwt");
 
     if (!token) {
@@ -33,13 +36,17 @@ export default function ProtectedRoute({ children }) {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        console.log("Protected data:", data.message);
-      } else {
-        setError("Token is invalid or expired. Please sign in again.");
-        localStorage.removeItem("jwt");
-        navigate("/login");
+        // success: clear error, stop loading, and optionally redirect
+        setError(null);
+        setLoading(false);
+        if (redirectOnSuccess) navigate("/", { replace: true });
+        return;
       }
+
+      // If the response is not ok, handle the error
+      setError("Token is invalid or expired. Please sign in again.");
+      localStorage.removeItem("jwt");
+      navigate("/login");
     } catch (error) {
       setError("Error fetching protected data. Please try again later.");
       console.error("Error:", error);
@@ -62,13 +69,14 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     // Show a loading state while fetching data
-    return <div>Loading...</div>;
+    return <AnimatedLoader />;
   }
 
   if (error) {
     // Show an error message if there was an issue
-    console.error("ProtectedRoute error:", error);
-    return <div>{error}</div>;
+    if (error) {
+      return <ErrorMessage message={error} onRetry={fetchProtectedData} />;
+    }
   }
 
   // If everything is valid, render the children (protected content)

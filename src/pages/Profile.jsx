@@ -33,7 +33,7 @@ export default function Profile() {
       <aside className="sidebar">
         <div className="profile-header">
           <div className="avatar">{form.fullName ? avatarInitials : ""}</div>
-          <button className="btn btn-submit">Upload</button>
+          <button>Upload</button>
           <h5 className="mt-3 mb-1">{form.fullName}</h5>
           <p className="email">{form.email}</p>
         </div>
@@ -119,9 +119,9 @@ export default function Profile() {
         </div>
 
         <div className="profile-btns">
-          <button className="btn btn-submit">Save Changes</button>
+          <button>Save Changes</button>
 
-          <button className="btn btn-submit" type="button" onClick={logout}>
+          <button type="button" onClick={logout}>
             Logout
           </button>
         </div>

@@ -85,9 +85,14 @@ export default function ProductsGrid({
           <h3 className="product-item-name">{product.productName}</h3>
           <p className="product-item-brand">{product.brand}</p>
           <p className="product-item-price">${product.price}</p>
-          <button className="add-to-cart-btn" disabled={!product.isAvailable}>
-            {product.isAvailable ? "Add to Cart" : "Unavailable"}
-          </button>
+          <div className="product-btns">
+            <button className="add-to-cart-btn" disabled={!product.isAvailable}>
+              {product.isAvailable ? "Add to Cart" : "Unavailable"}
+            </button>
+            <button className="add-to-wishlist-btn">
+              <i class="bi bi-heart"></i>
+            </button>
+          </div>
         </article>
       ))}
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import "../styles/CheckOut.css";
@@ -17,28 +17,94 @@ export default function CheckOut() {
 
   const navigate = useNavigate();
   const [checkoutData, setCheckoutData] = useState({
-    cartItems: [
-    // *pull from database or mock data *
-    
-    //   {
-    //     productId: 1,
-    //     name: "Ultimate Hydrating Cream",
-    //     image: cream,
-    //     price: 50.0,
-    //     qty: 1,
-    //   },
-    //   {
-    //     productId: 2,
-    //     name: "Rose Water Hydrating Mist",
-    //     image: mist,
-    //     price: 25.0,
-    //     qty: 2,
-    //   },
-    ],
-    subtotal: 125.0,
+    cartItems: [],
+    subtotal: 0,
     shipping: 0,
-    tax: 10.16,
+    tax: 0,
   });
+
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const shipping = 0; // optionally calculate based on rules
+    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // e.g., 10% GST
+
+    setCheckoutData({
+      cartItems: cart.map((item) => ({
+        productId: item.productId,
+        name: item.productName,
+        image: item.imageUrl,
+        price: item.price,
+        qty: item.quantity,
+      })),
+      subtotal,
+      shipping,
+      tax,
+    });
+  }, []);
+
+  const updateQuantity = (index, newQty) => {
+    if (newQty < 1) return;
+
+    const updated = [...checkoutData.cartItems];
+    updated[index].qty = newQty;
+
+    const subtotal = updated.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
+    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // recalculate tax
+
+    setCheckoutData({
+      ...checkoutData,
+      cartItems: updated,
+      subtotal,
+      tax,
+    });
+
+    // Save back to localStorage
+    const saved = updated.map((item) => ({
+      productId: item.productId,
+      productName: item.name,
+      imageUrl: item.image,
+      price: item.price,
+      quantity: item.qty,
+    }));
+    localStorage.setItem("cart", JSON.stringify(saved));
+  };
+
+  const removeItem = (index) => {
+    const updated = [...checkoutData.cartItems];
+    updated.splice(index, 1);
+
+    const subtotal = updated.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
+    const tax = parseFloat((subtotal * 0.1).toFixed(2));
+
+    setCheckoutData({
+      ...checkoutData,
+      cartItems: updated,
+      subtotal,
+      tax,
+    });
+
+    // update localStorage
+    const saved = updated.map((item) => ({
+      productId: item.productId,
+      productName: item.name,
+      imageUrl: item.image,
+      price: item.price,
+      quantity: item.qty,
+    }));
+    localStorage.setItem("cart", JSON.stringify(saved));
+  };
+
   const [step, setStep] = useState(1);
   const orderTotal =
     checkoutData.subtotal + checkoutData.shipping + checkoutData.tax;
@@ -69,24 +135,61 @@ export default function CheckOut() {
         <div className="col-md-8">
           <div className="section">
             <h4>Cart Summary</h4>
-            {checkoutData.cartItems.map((item) => (
-              <div key={item.productId} className="cart-item row">
-                <div className="col-3">
-                  <img src={item.image} alt={item.name} className="img-fluid" />
+            {checkoutData.cartItems.map((item, index) => (
+              <div key={item.productId} className="card mb-4 p-3 shadow-sm">
+                <div className="text-center">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="img-fluid mb-2"
+                    style={{ maxWidth: "120px" }}
+                  />
+                  <h5 className="fw-bold">{item.name}</h5>
                 </div>
-                <div className="col-7">
-                  <strong>{item.name}</strong>
-                  <div>
-                    <span className="text">
-                      ${item.price.toFixed(2)} × {item.qty}
+
+                <button
+                  className="btn position-absolute top-0 end-0 m-2 p-1"
+                  onClick={() => removeItem(index)}
+                  title="Remove from cart"
+                >
+                  <i
+                    className="bi bi-trash"
+                    style={{ color: "#dc3545", fontSize: "1.2rem" }}
+                  ></i>
+                </button>
+
+                <div className="text-center mt-3">
+                  <div className="d-flex justify-content-center align-items-center gap-2 mb-2">
+                    <button
+                      className="btn-qty"
+                      onClick={() => updateQuantity(index, item.qty - 1)}
+                      disabled={item.qty <= 1}
+                    >
+                      –
+                    </button>
+                    <span style={{ minWidth: "2rem", textAlign: "center" }}>
+                      {item.qty}
                     </span>
+                    <button
+                      className="btn-qty"
+                      onClick={() => updateQuantity(index, item.qty + 1)}
+                    >
+                      +
+                    </button>
                   </div>
-                </div>
-                <div className="col-2 text-end">
-                  ${(item.price * item.qty).toFixed(2)}
+
+                  <div>
+                    <small className="text-muted">
+                      ${item.price.toFixed(2)} × {item.qty}
+                    </small>
+                    <div className="fw-bold fs-5">
+                      ${(item.price * item.qty).toFixed(2)}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
+
             <button
               className="btn btn-primary continue-btn mt-3 shipping-btn"
               onClick={() => setStep(2)}

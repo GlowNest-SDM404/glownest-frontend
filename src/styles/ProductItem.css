@@ -92,3 +92,11 @@
 .product-stock-label.out-of-stock {
   background-color: #dc3545;
 }
+
+.add-to-wishlist-btn .bi-heart-fill {
+  color: #ff4d6d;
+}
+
+.add-to-wishlist-btn .bi-heart {
+  color: #888; 
+}

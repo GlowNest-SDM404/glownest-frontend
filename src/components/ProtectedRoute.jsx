@@ -73,10 +73,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (error) {
-    // Show an error message if there was an issue
-    if (error) {
-      return <ErrorMessage message={error} onRetry={fetchProtectedData} />;
-    }
+    return <ErrorMessage message={error} onRetry={fetchProtectedData} />;
   }
 
   // If everything is valid, render the children (protected content)

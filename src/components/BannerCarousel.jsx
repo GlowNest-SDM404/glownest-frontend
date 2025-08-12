@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../styles/BannerCarousel.css";
 
+import AnimatedSpinner from "../components/Loaders/AnimatedSpinner";
+
 const BannerCarousel = ({
   images,
   overlayTitle = "Reveal Your Natural Radiance",
@@ -25,7 +27,7 @@ const BannerCarousel = ({
 
   const [current, setCurrent] = useState(0);
   const [prevIndex, setPrevIndex] = useState(0);
-  const [ready, setReady] = useState(true);
+  const [ready, setReady] = useState(false);
   const [dir, setDir] = useState(1);
   const [paused, setPaused] = useState(false);
 
@@ -89,6 +91,17 @@ const BannerCarousel = ({
         <p>{overlaySubtitle}</p>
       </div>
 
+      {/* Loading state */}
+      {!ready && (
+        <div
+          className="home-slider-spinner"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <AnimatedSpinner />
+        </div>
+      )}
+
       {slides.length > 1 && (
         <>
           <button
@@ -105,19 +118,6 @@ const BannerCarousel = ({
           >
             ›
           </button>
-
-          <div className="home-dots" role="tablist" aria-label="Carousel dots">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                className={`home-dot ${i === current ? "active" : ""}`}
-                onClick={() => goTo(i, i > current ? 1 : -1)}
-                aria-label={`Go to slide ${i + 1}`}
-                aria-selected={i === current}
-                role="tab"
-              />
-            ))}
-          </div>
         </>
       )}
     </section>

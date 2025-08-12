@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "../styles/ProductItem.css";
 
+import ErrorMessage from "./ErrorMessage";
+import AnimatedLoader from "./Loaders/AnimatedLoader";
+
 export default function ProductsGrid({
   products: incomingProducts, // optional: array of products to render
   loading: incomingLoading = false,
@@ -47,8 +50,20 @@ export default function ProductsGrid({
     fetchProducts();
   }, [incomingProducts, incomingLoading, incomingError, currentJwt]);
 
-  if (loading) return <div>Loading products…</div>;
-  if (error) return <div>Failed to load products: {error}</div>;
+  if (loading) {
+    // Show a loading state while fetching data
+
+    return (
+      <div>
+        Loading products…
+        <AnimatedLoader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
 
   return (
     <div className="products-grid">

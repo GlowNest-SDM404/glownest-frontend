@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <section className="home-slider-container">
-        <BannerCarousel intervalMs={5000} showDots showButtons />
+        <BannerCarousel intervalMs={5000} showButtons />
       </section>
 
       <section>

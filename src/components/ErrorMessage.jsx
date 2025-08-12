@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/ErrorMessage.css";
 
 export default function ErrorMessage({ message, onRetry }) {

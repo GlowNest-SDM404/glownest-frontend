@@ -23,6 +23,9 @@
 }
 
 .search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #fdd5d5;
   color: #333;
   border: none;
@@ -30,6 +33,10 @@
   cursor: pointer;
   font-size: 1.2em;
   margin-left: 10px;
+}
+
+.search-icon {
+  display: none;
 }
 
 .btn-submit {
@@ -47,4 +54,14 @@
 .custom-btn:hover {
   color: white;
   background-color: #cf4446;
+}
+
+@media (max-width: 600px) {
+  .search-text {
+    display: none;
+  }
+  .search-icon {
+    display: inline-block;
+    font-size: 1rem;
+  }
 }

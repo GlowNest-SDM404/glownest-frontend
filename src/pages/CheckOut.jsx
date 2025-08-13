@@ -30,8 +30,9 @@ export default function CheckOut() {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const shipping = 0; // optionally calculate based on rules
-    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // e.g., 10% GST
+    // how should shipping be charged?
+    const shipping = 0; 
+    const tax = parseFloat((subtotal * 0.1).toFixed(2)); 
 
     setCheckoutData({
       cartItems: cart.map((item) => ({

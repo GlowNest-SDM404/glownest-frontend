@@ -32,7 +32,8 @@ export default function SearchBar({ initial = "" }) {
           aria-label="Search products"
         />
         <button className="search-btn custom-btn" type="submit">
-          Search
+          <span className="search-text">Search</span>
+          <i class="bi bi-search search-icon"></i>
         </button>
       </form>
     </div>

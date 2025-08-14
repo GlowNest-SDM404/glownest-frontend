@@ -8,7 +8,6 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ProtectedLayout from "./components/ProtectLayout.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 import Profile from "./pages/Profile.jsx";
-import WishList from "./pages/WishList.jsx";
 import CheckOut from "./pages/CheckOut.jsx";
 import OrderConfirmation from "./pages/OrderConfirmation.jsx";
 import Home from "./pages/Home.jsx";
@@ -30,7 +29,6 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/products" element={<ProductListPage />} />
-          <Route path="/wishlist" element={<WishList />} />
           <Route path="/checkout" element={<CheckOut />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/profile" element={<Profile />} />

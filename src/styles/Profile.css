@@ -1,21 +1,15 @@
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  background-color: #fff;
-}
-
 .profile-container {
   min-height: 100vh;
   display: flex;
+  align-items: flex-start;
   gap: 2rem;
   padding: 2rem 1rem;
   box-sizing: border-box;
 }
 
 .sidebar {
-  width: 250px;
+  flex: 0 0 250px;
+  min-width: 250px;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   padding: 1.5rem 1rem;
@@ -46,6 +40,9 @@ body,
 }
 
 .sidebar .nav-link {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
   padding: 0.5rem 1rem;
   color: #111827;
   font-weight: 500;
@@ -93,6 +90,11 @@ body,
   display: flex;
   justify-content: space-between;
   margin-top: 1.5rem;
+}
+
+.btn.primary.success {
+  filter: brightness(1.05);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05) inset;
 }
 
 @media (max-width: 768px) {

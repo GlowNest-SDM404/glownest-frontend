@@ -1,131 +1,73 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useUser } from "../contexts/UserContext";
+import AddressBook from "../components/AddressBook";
+import AccountDetails from "../components/AccountDetails";
+import WishList from "../components/WishList";
 
 import "../styles/Profile.css";
 
 export default function Profile() {
   const { user, logout } = useUser();
-  // useEffect to populates the form fields using the decoded JWT
+  const [active, setActive] = useState("account");
 
-  const [form, setForm] = useState({
-    fullName: "John Doe",
-    email: "johndoe123@gmail.com",
-    phone: "0403—123—456",
-    password: "",
-    confirmPassword: "",
-    newsletter: false,
-  });
+  const fullName = useMemo(
+    () => `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Guest",
+    [user]
+  );
 
-  const avatarInitials = form.fullName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-
-  // To save updated profile:
-  // PUT http://localhost:PORT/update_profile
-  // Body: { fullName, email, phone, password, newsletter }
-  // Header: Authorization: Bearer <token>
+  const avatarInitials = useMemo(
+    () =>
+      fullName
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase(),
+    [fullName]
+  );
 
   return (
     <div className="container profile-container">
-      {/* Sidebar */}
+      {/* Sidebar stays put */}
       <aside className="sidebar">
         <div className="profile-header">
-          <div className="avatar">{form.fullName ? avatarInitials : ""}</div>
+          <div className="avatar">{avatarInitials}</div>
           <button>Upload</button>
-          <h5 className="mt-3 mb-1">{form.fullName}</h5>
-          <p className="email">{form.email}</p>
+          <h5 className="mt-3 mb-1">{fullName}</h5>
+          <p className="email">{user?.email || ""}</p>
         </div>
         <nav className="nav flex-column">
-          <a className="nav-link active" href="/profile">
+          <button
+            className={`nav-link ${active === "account" ? "active" : ""}`}
+            onClick={() => setActive("account")}
+          >
             Account Details
-          </a>
-          <a className="nav-link" href="#">
-            Order History
-          </a>
-          <a className="nav-link" href="/wishlist">
-            My Wishlist
-          </a>
-          <a className="nav-link" href="#">
+          </button>
+          <button
+            className={`nav-link ${active === "addresses" ? "active" : ""}`}
+            onClick={() => setActive("addresses")}
+          >
             Address Book
-          </a>
+          </button>
+          <button
+            className={`nav-link ${active === "wishlist" ? "active" : ""}`}
+            onClick={() => setActive("wishlist")}
+          >
+            My Wishlist
+          </button>
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <div className="account-details">
-        <h3>Account Details</h3>
-
-        <div className="form-group">
-          <label>Full Name</label>
-          <input
-            className="form-control"
-            value={form.fullName}
-            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Email Address</label>
-          <input
-            className="form-control"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Phone Number</label>
-          <input
-            className="form-control"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>New Password</label>
-          <input
-            type="password"
-            className="form-control"
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Password Confirmation</label>
-          <input
-            type="password"
-            className="form-control"
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-check my-3">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="newsletterCheck"
-            checked={form.newsletter}
-            onChange={(e) => setForm({ ...form, newsletter: e.target.checked })}
-          />
-          <label className="form-check-label" htmlFor="newsletterCheck">
-            Subscribe to GlowNest's newsletter for product updates and
-            promotions.
-          </label>
-        </div>
-
-        <div className="profile-btns">
-          <button>Save Changes</button>
-
-          <button type="button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </div>
+      {/* Main content swaps here */}
+      <main className="account-details">
+        {active === "account" ? (
+          <AccountDetails onLogout={logout} />
+        ) : active === "addresses" ? (
+          <AddressBook />
+        ) : active === "wishlist" ? (
+          <WishList />
+        ) : null}
+      </main>
     </div>
   );
 }

@@ -191,9 +191,7 @@ export default function AddressBook() {
     <section className="address-book">
       <header className="address-header">
         <h3>Address Book</h3>
-        <button className="btn primary" onClick={() => setMode("create")}>
-          + Add Address
-        </button>
+        <button onClick={() => setMode("create")}>+ Add Address</button>
       </header>
 
       {error && <div className="alert error">{error}</div>}

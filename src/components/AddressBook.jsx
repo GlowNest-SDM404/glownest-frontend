@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import AddressForm from "./AddressForm";
 import "../styles/AddressBook.css";
 
+import AnimatedLoader from "./Loaders/AnimatedLoader";
+
 export default function AddressBook() {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,6 +186,11 @@ export default function AddressBook() {
         />
       </section>
     );
+  }
+
+  if (loading) {
+    // Show a loading state while fetching data
+    return <AnimatedLoader />;
   }
 
   // list mode

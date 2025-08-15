@@ -188,11 +188,6 @@ export default function AddressBook() {
     );
   }
 
-  if (loading) {
-    // Show a loading state while fetching data
-    return <AnimatedLoader />;
-  }
-
   // list mode
   return (
     <section className="address-book">
@@ -203,7 +198,7 @@ export default function AddressBook() {
 
       {error && <div className="alert error">{error}</div>}
       {loading ? (
-        <div> </div>
+        <AnimatedLoader />
       ) : addresses.length === 0 ? (
         <div className="empty">
           <p>No saved addresses yet.</p>

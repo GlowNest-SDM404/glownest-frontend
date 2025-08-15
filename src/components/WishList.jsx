@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 
 import "../styles/ProductItem.css";
 import "../styles/WishList.css";
+
+import AnimatedLoader from "./Loaders/AnimatedLoader";
 
 import { useCart } from "../contexts/CartContext";
 
@@ -145,7 +146,7 @@ export default function WishList() {
           toastOptions={{ duration: 2000, style: { boxShadow: "none" } }}
         />
         <h3>Your Wishlist</h3>
-        <div>Loading wishlist…</div>
+        <AnimatedLoader />
       </div>
     );
   }

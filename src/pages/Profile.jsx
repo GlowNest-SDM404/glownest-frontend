@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useUser } from "../contexts/UserContext";
 import AddressBook from "../components/AddressBook";
 import AccountDetails from "../components/AccountDetails";
@@ -6,9 +6,17 @@ import WishList from "../components/WishList";
 
 import "../styles/Profile.css";
 
-export default function Profile() {
+import { useParams, useNavigate } from "react-router-dom";
+
+export default function Profile({ activeTab = "account" }) {
+  const { tab } = useParams(); // "account" | "addresses" | "wishlist"
+  const [active, setActive] = useState(tab || activeTab || "account");
+
+  useEffect(() => {
+    if (tab && tab !== active) setActive(tab);
+  }, [tab]);
+
   const { user, logout } = useUser();
-  const [active, setActive] = useState("account");
 
   const fullName = useMemo(
     () => `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Guest",

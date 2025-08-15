@@ -13,7 +13,6 @@ import OrderConfirmation from "./pages/OrderConfirmation.jsx";
 import Home from "./pages/Home.jsx";
 import ProductListPage from "./pages/ProductListPage.jsx";
 
-
 const App = () => {
   return (
     <BrowserRouter>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useCart } from "../contexts/CartContext";
 import "../styles/CheckOut.css";
 
 export default function CheckOut() {
@@ -16,99 +17,41 @@ export default function CheckOut() {
   // }
 
   const navigate = useNavigate();
-  const [checkoutData, setCheckoutData] = useState({
-    cartItems: [],
-    subtotal: 0,
-    shipping: 0,
-    tax: 0,
-  });
+  const { cart, setQuantity, removeFromCart } = useCart();
 
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    const subtotal = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    // how should shipping be charged?
-    const shipping = 0; 
-    const tax = parseFloat((subtotal * 0.1).toFixed(2)); 
-
-    setCheckoutData({
-      cartItems: cart.map((item) => ({
-        productId: item.productId,
-        name: item.productName,
-        image: item.imageUrl,
-        price: item.price,
-        qty: item.quantity,
-      })),
-      subtotal,
-      shipping,
-      tax,
-    });
-  }, []);
-
-  const updateQuantity = (index, newQty) => {
-    if (newQty < 1) return;
-
-    const updated = [...checkoutData.cartItems];
-    updated[index].qty = newQty;
-
-    const subtotal = updated.reduce(
-      (sum, item) => sum + item.price * item.qty,
-      0
-    );
-    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // recalculate tax
-
-    setCheckoutData({
-      ...checkoutData,
-      cartItems: updated,
-      subtotal,
-      tax,
-    });
-
-    // Save back to localStorage
-    const saved = updated.map((item) => ({
-      productId: item.productId,
-      productName: item.name,
-      imageUrl: item.image,
+  const checkoutData = useMemo(() => {
+    const cartItems = cart.map((item) => ({
+      productId: item.productId, // already normalized in context
+      name: item.productName,
+      image: item.imageUrl,
       price: item.price,
-      quantity: item.qty,
+      qty: item.quantity,
     }));
-    localStorage.setItem("cart", JSON.stringify(saved));
+
+    const subtotal = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+    const shipping = 0; // tweak your rule here
+    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // 10% example
+
+    return { cartItems, subtotal, shipping, tax };
+  }, [cart]);
+
+  const orderTotal =
+    checkoutData.subtotal + checkoutData.shipping + checkoutData.tax;
+
+  // Update quantity (PATCH /me/cart/items/:productId)
+  const updateQuantity = async (index, newQty) => {
+    if (newQty < 1) return;
+    const productId = checkoutData.cartItems[index].productId;
+    await setQuantity(productId, newQty);
   };
 
-  const removeItem = (index) => {
-    const updated = [...checkoutData.cartItems];
-    updated.splice(index, 1);
-
-    const subtotal = updated.reduce(
-      (sum, item) => sum + item.price * item.qty,
-      0
-    );
-    const tax = parseFloat((subtotal * 0.1).toFixed(2));
-
-    setCheckoutData({
-      ...checkoutData,
-      cartItems: updated,
-      subtotal,
-      tax,
-    });
-
-    // update localStorage
-    const saved = updated.map((item) => ({
-      productId: item.productId,
-      productName: item.name,
-      imageUrl: item.image,
-      price: item.price,
-      quantity: item.qty,
-    }));
-    localStorage.setItem("cart", JSON.stringify(saved));
+  // Remove item (DELETE /me/cart/items/:productId)
+  const removeItem = async (index) => {
+    const productId = checkoutData.cartItems[index].productId;
+    await removeFromCart(productId);
   };
 
   const [step, setStep] = useState(1);
-  const orderTotal =
-    checkoutData.subtotal + checkoutData.shipping + checkoutData.tax;
 
   const handlePlaceOrder = () => {
     // To place order:

@@ -33,7 +33,7 @@ export default function SearchBar({ initial = "" }) {
         />
         <button className="search-btn custom-btn" type="submit">
           <span className="search-text">Search</span>
-          <i class="bi bi-search search-icon"></i>
+          <i className="bi bi-search search-icon"></i>
         </button>
       </form>
     </div>

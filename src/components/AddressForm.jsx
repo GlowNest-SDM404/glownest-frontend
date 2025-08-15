@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 const BASE = import.meta.env.VITE_SERVER_URL;
 const authHeaders = () => ({
@@ -20,6 +21,27 @@ const emptyForm = {
   isDefault: false,
 };
 
+function friendlyError(msg = "") {
+  const m = msg.match(/shippingAddresses\.\d+\.([a-zA-Z0-9_]+):\s*(.*)/);
+  if (m) {
+    const field = m[1];
+    const rest = m[2];
+    const labelMap = {
+      fullName: "Full name",
+      phone: "Phone number",
+      line1: "Address line 1",
+      city: "City",
+      postCode: "Post code",
+      country: "Country",
+      company: "Company",
+      state: "State/Region",
+      label: "Label",
+    };
+    return `${labelMap[field] || field}: ${rest}`;
+  }
+  return msg;
+}
+
 export default function AddressForm({
   title = "Add Address",
   initial = emptyForm,
@@ -31,6 +53,9 @@ export default function AddressForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const notifyError = (m) => toast.error(m || "Something went wrong");
+  const notifySuccess = (m) => toast.success(m || "Saved!");
+
   const requiredOk = useMemo(() => {
     const f = form;
     return (
@@ -38,7 +63,7 @@ export default function AddressForm({
       f.phone.trim() &&
       f.line1.trim() &&
       f.city.trim() &&
-      (f.postCode?.trim() || f.postCode?.trim()) &&
+      f.postCode?.trim() &&
       f.country.trim()
     );
   }, [form]);
@@ -53,9 +78,11 @@ export default function AddressForm({
 
     try {
       setSaving(true);
-      setError("");
 
-      const payload = { ...form };
+      const payload = {
+        ...form,
+        phone: String(form.phone || "").trim(),
+      };
 
       const url = addressId
         ? `${BASE}/me/addresses/${addressId}`
@@ -68,16 +95,22 @@ export default function AddressForm({
         body: JSON.stringify(payload),
       });
 
+      let body = null;
+      try {
+        body = await res.json();
+      } catch {}
+
       if (!res.ok) {
-        const msg = (await res.json().catch(() => null))?.message;
-        throw new Error(msg || `Save failed (${res.status})`);
+        const serverMsg =
+          body?.message || body?.error || `Save failed (${res.status})`;
+        notifyError(friendlyError(serverMsg));
+        return;
       }
 
-      // backend returns full updated list of addresses
-      const json = await res.json();
-      onSaved?.(json);
+      onSaved?.(body);
+      notifySuccess(addressId ? "Address updated." : "Address added.");
     } catch (err) {
-      setError(err.message || "Save failed");
+      notifyError(err.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -85,7 +118,10 @@ export default function AddressForm({
 
   return (
     <div className="address-form-card">
-      {error && <div className="alert error">{error}</div>}
+      <Toaster
+        position="bottom-center"
+        toastOptions={{ duration: 2000, style: { boxShadow: "none" } }}
+      />
 
       <form onSubmit={handleSubmit}>
         <div className="form-container">

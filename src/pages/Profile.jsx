@@ -3,13 +3,14 @@ import { useUser } from "../contexts/UserContext";
 import AddressBook from "../components/AddressBook";
 import AccountDetails from "../components/AccountDetails";
 import WishList from "../components/WishList";
+import OrderHistory from "../components/OrderHistory";
 
 import "../styles/Profile.css";
 
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function Profile({ activeTab = "account" }) {
-  const { tab } = useParams(); // "account" | "addresses" | "wishlist"
+  const { tab } = useParams(); // "account" | "addresses" | "wishlist" | "Order History"
   const [active, setActive] = useState(tab || activeTab || "account");
 
   useEffect(() => {
@@ -63,6 +64,12 @@ export default function Profile({ activeTab = "account" }) {
           >
             My Wishlist
           </button>
+          <button
+            className={`nav-link ${active === "order-history" ? "active" : ""}`}
+            onClick={() => setActive("order-history")}
+          >
+            Order History
+          </button>
         </nav>
       </aside>
 
@@ -74,6 +81,8 @@ export default function Profile({ activeTab = "account" }) {
           <AddressBook />
         ) : active === "wishlist" ? (
           <WishList />
+        ) : active === "order-history" ? (
+          <OrderHistory />
         ) : null}
       </main>
     </div>

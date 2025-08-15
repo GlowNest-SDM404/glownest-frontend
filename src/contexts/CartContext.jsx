@@ -70,6 +70,7 @@ export const CartProvider = ({ children }) => {
       body: JSON.stringify({ productId: product._id, quantity: 1 }),
     });
     if (!res.ok) throw new Error("Failed to add to cart");
+    
     const server = await res.json();
     const items = normalize(server);
     setCart(items);

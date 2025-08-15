@@ -1,64 +1,142 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import "../styles/CheckOut.css";
 
 export default function CheckOut() {
-  // Fetch checkout data including cart items and calculated totals
-  // GET http://localhost:PORT/checkout (auth required)
-
-  // Expected response:
-  // {
-  //   cartItems: [{ productId, name, image, price, qty }],
-  //   subtotal: number, (could be calculated from frontEnd or backEnd)
-  //   shipping: number,
-  //   tax: number
-  // }
-
   const navigate = useNavigate();
-  const { cart, setQuantity, removeFromCart } = useCart();
+  const { cart, setQuantity, removeFromCart, clearCart } = useCart();
 
+  const BASE = import.meta.env.VITE_SERVER_URL;
+  const authHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("jwt") || ""}`,
+  });
+
+  // ------ Cart math ------
   const checkoutData = useMemo(() => {
     const cartItems = cart.map((item) => ({
-      productId: item.productId, // already normalized in context
+      productId: item.productId,
       name: item.productName,
       image: item.imageUrl,
       price: item.price,
       qty: item.quantity,
     }));
-
     const subtotal = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-    const shipping = 0; // tweak your rule here
-    const tax = parseFloat((subtotal * 0.1).toFixed(2)); // 10% example
-
+    const shipping = 0;
+    const tax = parseFloat((subtotal * 0.1).toFixed(2));
     return { cartItems, subtotal, shipping, tax };
   }, [cart]);
 
   const orderTotal =
     checkoutData.subtotal + checkoutData.shipping + checkoutData.tax;
 
-  // Update quantity (PATCH /me/cart/items/:productId)
+  // ------ Stepper & addresses ------
+  const [step, setStep] = useState(1);
+  const [addresses, setAddresses] = useState([]);
+  const [shippingAddressId, setShippingAddressId] = useState(null);
+  const [addrLoading, setAddrLoading] = useState(false);
+  const [addrError, setAddrError] = useState("");
+
+  // Load address book when entering Step 2; select default (API sorts default first)
+  useEffect(() => {
+    if (step !== 2) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setAddrLoading(true);
+        setAddrError("");
+        const res = await fetch(`${BASE}/me/addresses`, {
+          method: "GET",
+          headers: authHeaders(),
+        });
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("jwt");
+          navigate("/login");
+          return;
+        }
+        const list = await res.json();
+        if (cancelled) return;
+        const safe = Array.isArray(list) ? list : [];
+        setAddresses(safe);
+        if (safe.length) {
+          const def = safe.find((a) => a.isDefault) || safe[0];
+          setShippingAddressId(def._id);
+        } else {
+          setShippingAddressId(null);
+        }
+      } catch {
+        if (!cancelled)
+          setAddrError("Couldn't load your addresses. Try again.");
+      } finally {
+        if (!cancelled) setAddrLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, BASE, navigate]);
+
+  const selectedAddress =
+    addresses.find((a) => a._id === shippingAddressId) || null;
+
+  // ------ Cart handlers ------
   const updateQuantity = async (index, newQty) => {
     if (newQty < 1) return;
     const productId = checkoutData.cartItems[index].productId;
     await setQuantity(productId, newQty);
   };
 
-  // Remove item (DELETE /me/cart/items/:productId)
   const removeItem = async (index) => {
     const productId = checkoutData.cartItems[index].productId;
     await removeFromCart(productId);
   };
 
-  const [step, setStep] = useState(1);
+  // ------ Order placement ------
+  const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      setStep(2);
+      setAddrError("Please choose a shipping address.");
+      return;
+    }
 
-  const handlePlaceOrder = () => {
-    // To place order:
-    // POST http://localhost:PORT/orders
-    // Body: { shippingInfo, paymentInfo }
-    // Header: Authorization: Bearer <token>
-    navigate("/order-confirmation");
+    // API expects items: [{ productId, quantity }]
+    const items = checkoutData.cartItems.map((i) => ({
+      productId: i.productId,
+      quantity: i.qty,
+    }));
+
+    const payload = {
+      items,
+      shippingAddress: selectedAddress,
+      billingAddress: selectedAddress, // simple case: same as shipping
+      shipping: checkoutData.shipping,
+      tax: checkoutData.tax,
+      currency: "AUD",
+    };
+
+    try {
+      const res = await fetch(`${BASE}/orders`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(body.message || `Order failed (${res.status})`);
+      }
+
+      try {
+        await clearCart();
+      } catch {
+        console.warn("Cart clear failed, but order was created.");
+      }
+
+      navigate(`/order-confirmation/${body._id}`);
+    } catch (e) {
+      alert(e.message || "Something went wrong placing your order.");
+    }
   };
 
   return (
@@ -80,7 +158,10 @@ export default function CheckOut() {
           <div className="section">
             <h4>Cart Summary</h4>
             {checkoutData.cartItems.map((item, index) => (
-              <div key={item.productId} className="card mb-4 p-3 shadow-sm">
+              <div
+                key={item.productId}
+                className="card mb-4 p-3 shadow-sm position-relative"
+              >
                 <div className="text-center">
                   <img
                     src={item.image}
@@ -99,7 +180,7 @@ export default function CheckOut() {
                   <i
                     className="bi bi-trash"
                     style={{ color: "#dc3545", fontSize: "1.2rem" }}
-                  ></i>
+                  />
                 </button>
 
                 <div className="text-center mt-3">
@@ -121,7 +202,6 @@ export default function CheckOut() {
                       +
                     </button>
                   </div>
-
                   <div>
                     <small className="text-muted">
                       ${item.price.toFixed(2)} × {item.qty}
@@ -138,8 +218,7 @@ export default function CheckOut() {
               className="btn btn-primary continue-btn mt-3 shipping-btn"
               onClick={() => setStep(2)}
             >
-              Continue to Shipping
-              <i class="bi bi-arrow-right"></i>
+              Continue to Shipping <i className="bi bi-arrow-right" />
             </button>
           </div>
 
@@ -150,14 +229,87 @@ export default function CheckOut() {
             </button>
             {step === 2 && (
               <div className="accordion-body">
-                {/* form fields */}
-                <form> {/* Add shipping fields here */} </form>
-                <button
-                  className="btn btn-primary mt-2"
-                  onClick={() => setStep(3)}
-                >
-                  Continue to Payment
-                </button>
+                {addrError && (
+                  <div className="alert alert-danger">{addrError}</div>
+                )}
+                {addrLoading ? (
+                  <div className="text-muted">Loading your addresses…</div>
+                ) : addresses.length === 0 ? (
+                  <div className="d-flex flex-column gap-2">
+                    <div>No addresses yet.</div>
+                    <Link
+                      className="btn btn-outline-primary"
+                      to="/account/addresses"
+                    >
+                      Add an address
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column gap-3">
+                    {addresses.map((a) => {
+                      const pc = a.postCode ?? a.postalCode;
+                      return (
+                        <label
+                          key={a._id}
+                          className={`card p-3 shadow-sm address-option ${
+                            a._id === shippingAddressId ? "selected" : ""
+                          }`}
+                        >
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="radio"
+                              name="shippingAddress"
+                              value={a._id}
+                              checked={shippingAddressId === a._id}
+                              onChange={() => setShippingAddressId(a._id)}
+                            />
+                            <div className="ms-2">
+                              <div className="d-flex align-items-center gap-2">
+                                <strong>{a.label || "Shipping Address"}</strong>
+                                {a.isDefault && (
+                                  <span className="badge bg-success">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-muted small">
+                                <div>
+                                  {a.fullName}
+                                  {a.phone ? ` • ${a.phone}` : ""}
+                                </div>
+                                {a.company && <div>{a.company}</div>}
+                                <div>
+                                  {a.line1}
+                                  {a.line2 ? `, ${a.line2}` : ""}
+                                </div>
+                                <div>
+                                  {a.city}
+                                  {a.state ? `, ${a.state}` : ""} {pc}
+                                </div>
+                                <div>{a.country}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                    <div className="d-flex gap-2">
+                      <Link
+                        className="btn btn-outline-secondary"
+                        to="/account/addresses"
+                      >
+                        Manage addresses
+                      </Link>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setStep(3)}
+                      >
+                        Continue to Payment
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -169,9 +321,13 @@ export default function CheckOut() {
             </button>
             {step === 3 && (
               <div className="accordion-body">
-                {/* form fields */}
-                <form> {/* Add payment fields (e.g. card info) here */} </form>
-                <button className="btn btn-success mt-2">Place Order</button>
+                {/* Your payment UI goes here */}
+                <button
+                  className="btn btn-success mt-2"
+                  onClick={handlePlaceOrder}
+                >
+                  Place Order
+                </button>
               </div>
             )}
           </div>

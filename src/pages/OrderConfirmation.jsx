@@ -1,138 +1,161 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-
-import "../styles/OrderConfirmation.css";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 
 export default function OrderConfirmation() {
-  // Fetch specific order details based on orderId from URL
-  // GET http://localhost:PORT/orders/:orderId (auth required)
-  // ----------------------------------
-  // ----------------------------------
-  // Expected response:
-  // {
-  //   number, deliveryDate,
-  //   items: [{ productId, name, image, price, qty }],
-  //   subtotal, shipping, tax, total,
-  //   shippingAddress, paymentMethod
-  // }
+  const { orderId } = useParams();
+  const BASE = import.meta.env.VITE_SERVER_URL;
 
-  const [user, setUser] = useState({ firstName: "John" });
-  const [order, setOrder] = useState({
-    number: "GN-987654321",
-    deliveryDate: "Sunday, August 10, 2025",
-    items: [
-      // {
-      //   productId: "1",
-      //   name: "Ultra Hydrating Cream",
-      //   image: cream,
-      //   price: 50.0,
-      //   qty: 2,
-      // },
-      // {
-      //   productId: "2",
-      //   name: "Rose Water Hydrating Mist",
-      //   image: mist,
-      //   price: 25.0,
-      //   qty: 1,
-      // },
-    ],
-    subtotal: 125.0,
-    shipping: 0,
-    tax: 10.16,
-    total: 135.16,
-    shippingAddress: "196 Flinders St, Melbourne VIC 3000",
-    paymentMethod: "Visa ending in 4242",
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const authHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("jwt") || ""}`,
   });
 
-  // Simulate cart CRUD operations
-  // POST => Add new product to cart [http://localhost:PORT/cart/create (requires JWT auth)]
-  // {
-  //   productId: string,
-  //   qty: number
-  // }
-  // If product already exists in cart, this may:
-  //  - Replace the quantity (if your backend supports upsert)
-  //  - Or return a conflict and require a PUT instead
-  // ----------------------------------
-  // PUT => Update existing item [http://localhost:PORT/cart/update/:productId (requires JWT auth)]
-  // {
-  //   productId: string,
-  //   qty: number
-  // }
-  // ----------------------------------
-  // DELETE => Remove item from cart [http://localhost:PORT/cart/delete/:productId (requires JWT auth)]
-  // Body or URL param should contain productId
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await fetch(`${BASE}/orders/${orderId}`, {
+          method: "GET",
+          headers: authHeaders(),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.message || `Failed (${res.status})`);
+        if (!cancelled) setOrder(body);
+      } catch (e) {
+        if (!cancelled) setError(e.message || "Could not load order.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId, BASE]);
+
+  const addressLines = (a) =>
+    a
+      ? [
+          a.fullName + (a.phone ? ` • ${a.phone}` : ""),
+          a.company,
+          a.line1 + (a.line2 ? `, ${a.line2}` : ""),
+          `${a.city}${a.state ? `, ${a.state}` : ""} ${
+            a.postCode ?? a.postalCode ?? ""
+          }`,
+          a.country,
+        ].filter(Boolean)
+      : [];
+
+  if (loading) return <div className="container py-5">Loading your order…</div>;
+  if (error)
+    return (
+      <div className="container py-5">
+        <div className="alert alert-danger mb-3">{error}</div>
+        <Link to="/" className="btn btn-primary">
+          Back to Home
+        </Link>
+      </div>
+    );
+
+  const items = order?.items || [];
+  const money = (n) => Number(n || 0).toFixed(2);
 
   return (
-    <div className="order-confirm-page container">
-      <div className="confirmation-card">
-        <div className="check-container">
-          <div className="check-icon">✓</div>
+    <div className="container py-4">
+      <div className="mb-4">
+        <h2>Thanks! Your order is in.</h2>
+        <div className="text-muted">
+          Order #{order._id} • Status: <strong>{order.status}</strong>
         </div>
-        <h2>Order Confirmed!</h2>
-        <p className="message">
-          Thank you, <strong>{user?.firstName || "Customer"}</strong>.
-        </p>
-        <p>
-          Order Number: <strong>{order.number}</strong>
-        </p>
-        <p>
-          Estimated Delivery: <strong>{order.deliveryDate}</strong>
-        </p>
-        <hr />
+      </div>
 
-        <h4 className="mt-4 text-left">Order Summary</h4>
-        {order.items.map((item) => (
-          <div
-            key={item.productId}
-            className="order-item d-flex align-items-center"
-          >
-            <img src={item.image} alt={item.name} className="order-img" />
-            <div className="ms-2">
-              <div>{item.name}</div>
-              <div className="qty-text">Qty: {item.qty}</div>
-            </div>
-            <div className="ms-auto">${(item.price * item.qty).toFixed(2)}</div>
+      <div className="row g-4">
+        <div className="col-md-8">
+          <div className="card p-3">
+            <h5 className="mb-3">Items</h5>
+            <ul className="list-group list-group-flush">
+              {items.map((it) => (
+                <li
+                  key={it.product}
+                  className="list-group-item d-flex align-items-center gap-3"
+                >
+                  <img
+                    src={it.imageUrl}
+                    alt={it.name}
+                    style={{ width: 64, height: 64, objectFit: "cover" }}
+                  />
+                  <div className="flex-grow-1">
+                    <div className="fw-semibold">{it.name}</div>
+                    <div className="text-muted small">{it.brand}</div>
+                    <div className="text-muted small">
+                      Qty: {it.quantity} • ${money(it.unitPrice)} each
+                    </div>
+                  </div>
+                  <div className="fw-bold">${money(it.lineTotal)}</div>
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
 
-        <div className="d-flex justify-content-between summary-lines">
-          <span>Subtotal:</span>
-          <span>${order.subtotal.toFixed(2)}</span>
-        </div>
-        <div className="d-flex justify-content-between summary-lines">
-          <span>Shipping:</span>
-          <span>${order.shipping.toFixed(2)}</span>
-        </div>
-        <div className="d-flex justify-content-between summary-lines">
-          <span>Tax:</span>
-          <span>${order.tax.toFixed(2)}</span>
-        </div>
-        <hr />
-        <div className="d-flex justify-content-between total-line">
-          <strong>Total:</strong>
-          <strong>${order.total.toFixed(2)}</strong>
-        </div>
-        <hr />
+          <div className="card p-3 mt-3">
+            <h5 className="mb-2">Shipping Address</h5>
+            {addressLines(order.shippingAddress).map((l, i) => (
+              <div key={i} className="text-muted">
+                {l}
+              </div>
+            ))}
+          </div>
 
-        <h5 className="mt-4 delivery-payment text-left">Delivery & Payment</h5>
-        <p className="text-left">
-          <strong>Shipping Address:</strong> {order.shippingAddress}
-        </p>
-        <p className="text-left">
-          <strong>Payment Method:</strong> {order.paymentMethod}
-        </p>
+          <div className="card p-3 mt-3">
+            <h5 className="mb-2">Billing Address</h5>
+            {addressLines(order.billingAddress).map((l, i) => (
+              <div key={i} className="text-muted">
+                {l}
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <div className="conf-buttons">
-          <Link to="/" className="btn btn-primary continue-shopping-btn">
-            Continue Shopping
-          </Link>
-          <Link
-            to="#"
-            className="btn btn-outline-primary view-order-details-btn"
-          >
-            View Order Details
-          </Link>
+        <div className="col-md-4">
+          <div className="card p-3">
+            <h5>Order Summary</h5>
+            <div className="d-flex justify-content-between">
+              <span>Subtotal</span>
+              <strong>${money(order.subtotal)}</strong>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span>Shipping</span>
+              <strong>${money(order.shipping)}</strong>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span>Tax</span>
+              <strong>${money(order.tax)}</strong>
+            </div>
+            {Number(order.discount) > 0 && (
+              <div className="d-flex justify-content-between">
+                <span>Discount</span>
+                <strong>- ${money(order.discount)}</strong>
+              </div>
+            )}
+            <hr />
+            <div className="d-flex justify-content-between">
+              <span>Total</span>
+              <strong>
+                ${money(order.total)} {order.currency}
+              </strong>
+            </div>
+            <div className="text-muted small mt-2">
+              Payment: {order?.payment?.provider} • {order?.payment?.status}
+            </div>
+            <Link to="/" className="btn btn-primary mt-3">
+              Continue shopping
+            </Link>
+          </div>
         </div>
       </div>
     </div>

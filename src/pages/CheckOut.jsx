@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+
 import "../styles/CheckOut.css";
+import CheckoutPayment from "../components/CheckoutPayment";
 
 export default function CheckOut() {
   const navigate = useNavigate();
-  const { cart, setQuantity, removeFromCart, clearCart } = useCart();
+  const { cart, setQuantity, removeFromCart } = useCart();
 
   const BASE = import.meta.env.VITE_SERVER_URL;
   const authHeaders = () => ({
@@ -13,7 +15,6 @@ export default function CheckOut() {
     Authorization: `Bearer ${localStorage.getItem("jwt") || ""}`,
   });
 
-  // ------ Cart math ------
   const checkoutData = useMemo(() => {
     const cartItems = cart.map((item) => ({
       productId: item.productId,
@@ -31,14 +32,12 @@ export default function CheckOut() {
   const orderTotal =
     checkoutData.subtotal + checkoutData.shipping + checkoutData.tax;
 
-  // ------ Stepper & addresses ------
   const [step, setStep] = useState(1);
   const [addresses, setAddresses] = useState([]);
   const [shippingAddressId, setShippingAddressId] = useState(null);
   const [addrLoading, setAddrLoading] = useState(false);
   const [addrError, setAddrError] = useState("");
 
-  // Load address book when entering Step 2; select default (API sorts default first)
   useEffect(() => {
     if (step !== 2) return;
     let cancelled = false;
@@ -80,7 +79,6 @@ export default function CheckOut() {
   const selectedAddress =
     addresses.find((a) => a._id === shippingAddressId) || null;
 
-  // ------ Cart handlers ------
   const updateQuantity = async (index, newQty) => {
     if (newQty < 1) return;
     const productId = checkoutData.cartItems[index].productId;
@@ -92,51 +90,24 @@ export default function CheckOut() {
     await removeFromCart(productId);
   };
 
-  // ------ Order placement ------
-  const handlePlaceOrder = async () => {
+  const buildOrderPayload = () => {
     if (!selectedAddress) {
       setStep(2);
       setAddrError("Please choose a shipping address.");
-      return;
+      return null;
     }
-
-    // API expects items: [{ productId, quantity }]
     const items = checkoutData.cartItems.map((i) => ({
       productId: i.productId,
       quantity: i.qty,
     }));
-
-    const payload = {
+    return {
       items,
       shippingAddress: selectedAddress,
-      billingAddress: selectedAddress, // simple case: same as shipping
+      billingAddress: selectedAddress,
       shipping: checkoutData.shipping,
       tax: checkoutData.tax,
       currency: "AUD",
     };
-
-    try {
-      const res = await fetch(`${BASE}/orders`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      });
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(body.message || `Order failed (${res.status})`);
-      }
-
-      try {
-        await clearCart();
-      } catch {
-        console.warn("Cart clear failed, but order was created.");
-      }
-
-      navigate(`/order-confirmation/${body._id}`);
-    } catch (e) {
-      alert(e.message || "Something went wrong placing your order.");
-    }
   };
 
   return (
@@ -321,13 +292,11 @@ export default function CheckOut() {
             </button>
             {step === 3 && (
               <div className="accordion-body">
-                {/* Your payment UI goes here */}
-                <button
-                  className="btn btn-success mt-2"
-                  onClick={handlePlaceOrder}
-                >
-                  Place Order
-                </button>
+                <CheckoutPayment
+                  buildOrderPayload={buildOrderPayload}
+                  BASE={BASE}
+                  authHeaders={authHeaders()}
+                />
               </div>
             )}
           </div>
@@ -356,7 +325,7 @@ export default function CheckOut() {
             </div>
             <button
               className="btn btn-primary continue-btn mt-3 place-order-btn"
-              onClick={handlePlaceOrder}
+              // onClick={handlePlaceOrder}
             >
               Place Order
             </button>

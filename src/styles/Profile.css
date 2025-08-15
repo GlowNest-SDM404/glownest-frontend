@@ -97,6 +97,10 @@
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05) inset;
 }
 
+.btn-view {
+  font-size: 0.875rem;
+}
+
 @media (max-width: 768px) {
   html,
   body,

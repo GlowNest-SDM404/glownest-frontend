@@ -107,6 +107,11 @@ export default function CheckoutPayment({
   BASE,
   authHeaders,
 }) {
+  const pk = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  const stripePromise = useMemo(() => (pk ? loadStripe(pk) : null), [pk]);
+  if (!pk)
+    return <div className="alert alert-warning">Missing Stripe key.</div>;
+
   const stripeOptions = useMemo(() => ({}), []);
   return (
     <Elements stripe={stripePromise} options={stripeOptions}>

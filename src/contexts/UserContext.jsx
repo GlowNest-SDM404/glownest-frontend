@@ -10,7 +10,6 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
-
     if (!token || isTokenExpired(token)) {
       localStorage.removeItem("jwt");
       setUser(null);

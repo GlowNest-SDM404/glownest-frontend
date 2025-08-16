@@ -24,7 +24,7 @@ export default function CheckOut() {
       qty: item.quantity,
     }));
     const subtotal = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-    const shipping = 0;
+    const shipping = 9.99;
     const tax = parseFloat((subtotal * 0.1).toFixed(2));
     return { cartItems, subtotal, shipping, tax };
   }, [cart]);

@@ -9,8 +9,6 @@ import {
 import { useCart } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
 function InnerPayment({ buildOrderPayload, BASE, authHeaders }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -20,63 +18,103 @@ function InnerPayment({ buildOrderPayload, BASE, authHeaders }) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
+  // avoid double-creating orders on refresh/retry
+  const [idemKey] = useState(
+    () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`
+  );
+
   const pay = async () => {
     if (!stripe || !elements) return;
     setMessage("");
     setSubmitting(true);
 
     try {
+      // collect checkout payload (items, addresses, totals)
       const payload = buildOrderPayload?.();
       if (!payload) {
         throw new Error("Please complete shipping details before paying.");
       }
 
-      const create = await fetch(`${BASE}/orders`, {
+      // grab payment intent from backend
+      const intentRes = await fetch(`${BASE}/payments/create-intent`, {
         method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify(payload),
+        headers: {
+          ...authHeaders,
+          "Content-Type": "application/json",
+          "Idempotency-Key": idemKey,
+        },
+        body: JSON.stringify({
+          currency: payload.currency || "AUD",
+
+          metadata: {
+            itemCount: String(
+              payload.items?.reduce((n, i) => n + (i.quantity || 0), 0) || 0
+            ),
+          },
+          // Send full checkout details so server can compute exact amount
+          checkout: payload,
+        }),
       });
 
-      const order = await create.json();
-      if (!create.ok) throw new Error(order.message || "Order creation failed");
+      const intentBody = await intentRes.json().catch(() => ({}));
+      if (!intentRes.ok)
+        throw new Error(intentBody.message || "Failed to start payment.");
+      const { clientSecret, intentId } = intentBody || {};
+      if (!clientSecret) throw new Error("Missing client secret from server.");
 
-      const piRes = await fetch(`${BASE}/orders/${order._id}/payment-intent`, {
-        method: "POST",
-        headers: authHeaders,
-      });
-
-      const { clientSecret, intentId, message: piErr } = await piRes.json();
-      if (!piRes.ok) throw new Error(piErr || "Failed to start payment");
-
+      // confirm card payment in the browser
       const card = elements.getElement(CardElement);
+      if (!card) throw new Error("Card element not ready.");
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
         {
           payment_method: { card },
         }
       );
-      if (error) throw new Error(error.message || "Card was declined");
 
+      if (error) throw new Error(error.message || "Card was declined.");
+      if (!paymentIntent) throw new Error("Payment failed to complete.");
       if (paymentIntent.status !== "succeeded") {
         throw new Error(`Payment ${paymentIntent.status}`);
       }
 
-      const mark = await fetch(`${BASE}/orders/${order._id}/mark-paid`, {
+      // payment succeeded — create the order as PAID
+      const createOrderRes = await fetch(`${BASE}/orders`, {
         method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({ paymentIntentId: intentId || paymentIntent.id }),
+        headers: {
+          ...authHeaders,
+          "Content-Type": "application/json",
+          "Idempotency-Key": idemKey + "-order",
+        },
+        body: JSON.stringify({
+          ...payload,
+          status: "paid",
+          paymentIntentId: intentId || paymentIntent.id,
+          payment: {
+            provider: "stripe",
+            status: "succeeded",
+            intentId: intentId || paymentIntent.id,
+          },
+          // Let server compute subtotal/shipping/tax/total from payload
+        }),
       });
-      const updated = await mark.json();
-      if (!mark.ok)
-        throw new Error(updated.message || "Could not finalize order");
 
+      const createdOrder = await createOrderRes.json().catch(() => ({}));
+      if (!createOrderRes.ok) {
+        // payment succeeded, but order creation failed
+        throw new Error(
+          createdOrder.message || "Payment captured, but order creation failed."
+        );
+      }
+
+      // clean up cart and go to confirmation
       try {
         await clearCart();
       } catch {}
       sessionStorage.setItem("justPlacedOrder", "1");
-      navigate(`/order-confirmation/${updated._id}`);
+      navigate(`/order-confirmation/${createdOrder._id}`);
     } catch (e) {
-      setMessage(e.message);
+      setMessage(e.message || "Something went wrong processing your payment.");
     } finally {
       setSubmitting(false);
     }
@@ -112,9 +150,8 @@ export default function CheckoutPayment({
   if (!pk)
     return <div className="alert alert-warning">Missing Stripe key.</div>;
 
-  const stripeOptions = useMemo(() => ({}), []);
   return (
-    <Elements stripe={stripePromise} options={stripeOptions}>
+    <Elements stripe={stripePromise} options={{}}>
       <InnerPayment
         buildOrderPayload={buildOrderPayload}
         BASE={BASE}

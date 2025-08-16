@@ -149,11 +149,11 @@ export default function ProductsGrid({
     }
 
     const id = product._id;
-    if (adding.has(id)) return; 
+    if (adding.has(id)) return;
 
     setAdding((prev) => new Set(prev).add(id));
     try {
-      await addToCart(product); 
+      await addToCart(product);
       notifyCart(product.productName);
     } catch (e) {
       notifyError(e?.message || "Failed to add to cart");
@@ -170,7 +170,6 @@ export default function ProductsGrid({
     // Show a loading state while fetching data
     return (
       <div>
-        Loading products…
         <AnimatedLoader />
       </div>
     );

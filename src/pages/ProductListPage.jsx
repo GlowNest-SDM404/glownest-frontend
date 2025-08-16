@@ -77,7 +77,7 @@ export default function ProductListPage() {
         <FilterSidebar value={filters} onChange={setFilters} />
 
         <main>
-          {loading && products.length === 0 && <div>Loading products…</div>}
+          {loading && products.length === 0 && <div></div>}
           {error && products.length === 0 && (
             <div>Failed to load products: {error}</div>
           )}

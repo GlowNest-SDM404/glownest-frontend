@@ -18,8 +18,15 @@ export default function Profile({ activeTab = "account" }) {
   const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
 
   useEffect(() => {
+    console.log("User data:", user);
     if (tab && tab !== active) setActive(tab);
-    if (user && user.photoUrl) setProfilePhotoUrl(`${import.meta.env.VITE_SERVER_URL}${user.photoUrl}`);
+    if (
+    user &&
+    user.photoUrl &&
+    /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(user.photoUrl)
+  ) {
+    setProfilePhotoUrl(`${import.meta.env.VITE_SERVER_URL}${user.photoUrl}`);
+  }
   }, [tab, user]);
 
   const fullName = useMemo(

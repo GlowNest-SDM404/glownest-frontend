@@ -13,7 +13,6 @@ export default function AccountDetails({
   const navigate = useNavigate();
 
   const base = initialUser || user || {};
-  console.log("User in AccountDetails:", base);
   const initial = {
     fullName: `${base.firstName || ""} ${base.lastName || ""}`.trim() || "",
     email: base.email || "",

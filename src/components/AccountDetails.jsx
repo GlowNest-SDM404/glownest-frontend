@@ -71,7 +71,6 @@ export default function AccountDetails({ initialUser, onSave, onLogout }) {
     const doPasswordsMatch =
       !form.password || form.password === form.confirmPassword;
 
-    // keep the button clickable so handleSubmit can show toasts
     const canSubmit = !!form.fullName?.trim() && !saving;
 
     return { isPhoneValid, doPasswordsMatch, canSubmit };
@@ -102,8 +101,14 @@ export default function AccountDetails({ initialUser, onSave, onLogout }) {
     setSaved(false);
     setError("");
 
+    const trimmed = (form.fullName || "").trim();
+    const parts = trimmed.split(/\s+/);
+    const firstName = parts.shift() || "";
+    const lastName = parts.join(" ");
+
     const payload = {
-      fullName: form.fullName.trim(),
+      firstName,
+      lastName,
       phoneNumber: form.phone.trim(),
       newsletter: !!form.subscribe,
       ...(form.password ? { password: form.password } : {}),

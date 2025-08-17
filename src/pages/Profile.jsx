@@ -17,7 +17,7 @@ export default function Profile({ activeTab = "account" }) {
     if (tab && tab !== active) setActive(tab);
   }, [tab]);
 
-  const { user, logout } = useUser();
+  const { user, logout, setUser } = useUser();
 
   const fullName = useMemo(
     () => `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Guest",
@@ -34,6 +34,33 @@ export default function Profile({ activeTab = "account" }) {
         .toUpperCase(),
     [fullName]
   );
+
+  async function saveAccountDetails(payload) {
+    const token = localStorage.getItem("jwt") || sessionStorage.getItem("jwt");
+    const apiBase = import.meta.env.VITE_SERVER_URL;
+
+    if (
+      !payload.firstName &&
+      !payload.lastName &&
+      typeof payload.fullName === "string"
+    ) {
+      const parts = payload.fullName.trim().split(/\s+/);
+      payload.firstName = parts.shift() || "";
+      payload.lastName = parts.join(" ");
+    }
+
+    const resp = await fetch(`${apiBase}/me`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    setUser?.(data.user);
+    return data;
+  }
 
   return (
     <div className="container profile-container">
@@ -76,7 +103,7 @@ export default function Profile({ activeTab = "account" }) {
       {/* Main content swaps here */}
       <main className="account-details">
         {active === "account" ? (
-          <AccountDetails onLogout={logout} />
+          <AccountDetails onLogout={logout} onSave={saveAccountDetails} />
         ) : active === "addresses" ? (
           <AddressBook />
         ) : active === "wishlist" ? (

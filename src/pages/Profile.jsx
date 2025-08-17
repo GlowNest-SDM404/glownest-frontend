@@ -41,7 +41,7 @@ export default function Profile({ activeTab = "account" }) {
       <aside className="sidebar">
         <div className="profile-header">
           <div className="avatar">{avatarInitials}</div>
-          <button>Upload</button>
+
           <h5 className="mt-3 mb-1">{fullName}</h5>
           <p className="email">{user?.email || ""}</p>
         </div>

@@ -212,7 +212,7 @@ export default function CheckOut() {
                     <div>No addresses yet.</div>
                     <Link
                       className="btn btn-outline-primary"
-                      to="/account/addresses"
+                      to="/profile/addresses"
                     >
                       Add an address
                     </Link>
@@ -270,7 +270,7 @@ export default function CheckOut() {
                     <div className="d-flex gap-2">
                       <Link
                         className="btn btn-outline-secondary"
-                        to="/account/addresses"
+                        to="/profile/addresses"
                       >
                         Manage addresses
                       </Link>

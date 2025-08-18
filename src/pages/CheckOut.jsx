@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 
@@ -8,6 +8,8 @@ import CheckoutPayment from "../components/CheckoutPayment";
 export default function CheckOut() {
   const navigate = useNavigate();
   const { cart, setQuantity, removeFromCart } = useCart();
+
+  const paymentRef = useRef(null);
 
   const BASE = import.meta.env.VITE_SERVER_URL;
   const authHeaders = () => ({
@@ -325,7 +327,24 @@ export default function CheckOut() {
             </div>
             <button
               className="btn btn-primary continue-btn mt-3 place-order-btn"
-              // onClick={handlePlaceOrder}
+              onClick={() => {
+                if (step === 1) {
+                  setStep(2);
+                } else if (step === 2) {
+                  if (shippingAddressId) {
+                    setStep(3);
+                    setTimeout(() => {
+                      paymentRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }, 100);
+                  } else {
+                    setAddrError("Please choose a shipping address.");
+                  }
+                } else if (step === 3) {
+                  paymentRef.current?.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
             >
               Place Order
             </button>
